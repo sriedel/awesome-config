@@ -1,0 +1,1 @@
+for file in *.xbm ; do convert wifi_02.xbm -bordercolor transparent -border 40x40 -gravity center -crop 20x20+0+0 -fill white -transparent white -colorize 100 wifi_02.png ; done
