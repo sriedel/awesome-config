@@ -1,12 +1,14 @@
 -- Standard awesome library
-require("awful")
-require("awful.autofocus")
-require("awful.rules")
+local awful = require("awful")
+awful.autofocus = require("awful.autofocus")
+awful.rules = require("awful.rules")
 -- Theme handling library
-require("beautiful")
+local beautiful = require("beautiful")
+local gears = require("gears")
 -- Notification library
-require("naughty")
-require("vicious")
+local naughty = require("naughty")
+local vicious = require("vicious")
+local wibox = require("wibox")
 
 -- Load Debian menu entries
 -- require("dan.menu")
@@ -14,11 +16,14 @@ require("vicious")
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
 --  beautiful.init("/usr/share/awesome/themes/default/theme.lua")
-beautiful.init("/usr/share/awesome/themes/niceandclean/theme.lua")
+beautiful.init("/home/sr/.config/awesome/themes/niceandclean/theme.lua")
+for s = 1, screen.count() do
+  gears.wallpaper.maximized( beautiful.wallpaper, s, true )
+end
 -- This is used later as the default terminal and editor to run.
 -- terminal = "x-terminal-emulator"
 terminal = "xterm -bg black -fg white"
-editor = os.getenv("EDITOR") or "editor"
+editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 
 -- Default modkey.
@@ -33,16 +38,16 @@ modkey = "Mod4"
 layouts =
 {
     awful.layout.suit.floating,
-    awful.layout.suit.tile,
+    -- awful.layout.suit.tile,
     awful.layout.suit.tile.left,
     awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
+    -- awful.layout.suit.tile.top,
     awful.layout.suit.fair,
     awful.layout.suit.fair.horizontal,
-    awful.layout.suit.spiral,
-    awful.layout.suit.spiral.dwindle,
+    -- awful.layout.suit.spiral,
+    -- awful.layout.suit.spiral.dwindle,
     awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
+    -- awful.layout.suit.max.fullscreen,
     awful.layout.suit.magnifier
 }
 -- }}}
@@ -50,7 +55,7 @@ layouts =
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {
-  names = { "web", "usersvc", "connect", "misc1", "misc2", 6, 7, "Skype", "mail" },
+  names = { "web", "usersvc", "other", "misc1", "misc2", 6, 7, "Skype", "mail" },
   layout = { layouts[1], layouts[1], layouts[1], layouts[1], layouts[1], 
              layouts[1], layouts[1], layouts[2], layouts[1] }
 }
@@ -72,68 +77,49 @@ myawesomemenu = {
 }
 
 mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    -- { "Debian", debian.menu.Debian_menu.Debian },
                                     { "open terminal", terminal }
                                   }
                         })
 
-mylauncher = awful.widget.launcher({ image = image(beautiful.awesome_icon),
+mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
                                      menu = mymainmenu })
 -- }}}
 
 -- {{{ Wibox
 -- Create a textclock widget
-mytextclock = awful.widget.textclock({ align = "right" })
+mytextclock = awful.widget.textclock()
 
 -- Create a systray
-mysystray = widget({ type = "systray" })
+mynetwidget = wibox.widget.textbox()
+mynetupicon = wibox.widget.imagebox()
+mynetupicon:set_image( "/home/sr/.config/awesome/icons/xbm8x8/net_up_03.png" )
+mynetdownicon = wibox.widget.imagebox()
+mynetdownicon:set_image( "/home/sr/.config/awesome/icons/xbm8x8/net_down_03.png" )
+--vicious.register( mynetwidget, vicious.widgets.net, 
+--                  function( widget, args )
+--                    return string.format( '<span color="#CC9393">%03d kb dn</span> <span color="#7F9F7F">%03d kb up</span>',
+--                                          args['{eth0 down_kb}'], args['{eth0 up_kb}'] )
+--                  end,
+--                  3 )
 
-mynetwidget = widget({ type = "textbox" })
-mynetupicon = widget({ type = "imagebox" } )
-mynetdownicon = widget({ type = "imagebox" } )
-mynetupicon.image = image( "/home/sr/.config/awesome/icons/xbm8x8/net_up_03.png" )
-mynetdownicon.image = image( "/home/sr/.config/awesome/icons/xbm8x8/net_down_03.png" )
-vicious.register( mynetwidget, vicious.widgets.net, 
-                  function( widget, args )
-                    return string.format( '<span color="#CC9393">%03d kb dn</span> <span color="#7F9F7F">%03d kb up</span>',
-                                          args['{eth0 down_kb}'], args['{eth0 up_kb}'] )
-                  end,
-                  3 )
-
-mycpuwidget = widget({ type="textbox" } )
-mycpuicon = widget( { type = "imagebox" } )
-mycpuicon.image = image( "/home/sr/.config/awesome/icons/xbm8x8/cpu.png" )
+mycpuwidget = wibox.widget.textbox()
+mycpuicon = wibox.widget.imagebox()
+mycpuicon:set_image( "/home/sr/.config/awesome/icons/xbm8x8/cpu.png" )
 vicious.register( mycpuwidget, vicious.widgets.cpu, 
                   function( widget, args ) 
                     return string.format( '<span color="#CCCCCC">%02d%%</span>', args[1] )
                   end,
                   3 )
 
---mymemwidget = widget( {type="textbox"} )
---vicious.register( mymemwidget, vicious.widgets.mem,
---                  "<span color='9393CC'>$1</span><span color='CCCC93'>$5</span>", 2 )
---
---mymemwidget = awful.widget.progressbar()
----- Progressbar properties
---mymemwidget:set_width(8)
---mymemwidget:set_height(10)
---mymemwidget:set_vertical(true)
---mymemwidget:set_background_color("#494B4F")
---mymemwidget:set_border_color(nil)
---mymemwidget:set_color("#AECF96")
---mymemwidget:set_gradient_colors({ "#AECF96", "#88A175", "#FF5656" })
--- Register widget
---vicious.register(mymemwidget, vicious.widgets.mem, "$1", 2)
-
-memwidget = widget({ type = "textbox" })
+memwidget = wibox.widget.textbox()
 vicious.cache(vicious.widgets.mem)
 vicious.register(memwidget, vicious.widgets.mem, "$1% ($2MB/$3MB), $6MB", 13)
 
 
-mymemicon = widget( {type="imagebox"} )
-mymemicon.image = image( "/home/sr/.config/awesome/icons/xbm8x8/mem.png" )
+mymemicon = wibox.widget.imagebox()
+mymemicon:set_image( "/home/sr/.config/awesome/icons/xbm8x8/mem.png" )
 
-separator = widget({ type = "textbox" })
+separator = wibox.widget.textbox()
 separator.text = " :: "
 
 -- Create a wibox for each screen and add it
@@ -183,7 +169,7 @@ mytasklist.buttons = awful.util.table.join(
 
 for s = 1, screen.count() do
     -- Create a promptbox for each screen
-    mypromptbox[s] = awful.widget.prompt({ layout = awful.widget.layout.horizontal.leftright })
+    mypromptbox[s] = awful.widget.prompt()
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
     -- We need one layoutbox per screen.
     mylayoutbox[s] = awful.widget.layoutbox(s)
@@ -193,32 +179,38 @@ for s = 1, screen.count() do
                            awful.button({ }, 4, function () awful.layout.inc(layouts, 1) end),
                            awful.button({ }, 5, function () awful.layout.inc(layouts, -1) end)))
     -- Create a taglist widget
-    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.label.all, mytaglist.buttons)
+    mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
 
     -- Create a tasklist widget
-    mytasklist[s] = awful.widget.tasklist(function(c)
-                                              return awful.widget.tasklist.label.currenttags(c, s)
-                                          end, mytasklist.buttons)
+    mytasklist[s] = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, mytasklist.buttons )
 
     -- Create the wibox
     mywibox[s] = awful.wibox({ position = "top", screen = s })
-    -- Add widgets to the wibox - order matters
-    mywibox[s].widgets = {
-        {
-            mylauncher,
-            mytaglist[s],
-            mypromptbox[s],
-            layout = awful.widget.layout.horizontal.leftright
-        },
-        mylayoutbox[s],
-        mytextclock,
-        separator, mynetupicon, mynetwidget, mynetdownicon,
-        separator, memwidget, mymemicon,
-        separator, mycpuwidget, mycpuicon,
-        s == 1 and mysystray or nil,
-        -- mytasklist[s],
-        layout = awful.widget.layout.horizontal.rightleft
-    }
+    local left_layout = wibox.layout.fixed.horizontal();
+    left_layout:add( mylauncher )
+    left_layout:add( mytaglist[s] )
+    left_layout:add( mypromptbox[s] )
+
+    local right_layout = wibox.layout.fixed.horizontal();
+    if s == 1 then right_layout:add( wibox.widget.systray() ) end
+    right_layout:add( mycpuicon )
+    right_layout:add( mycpuwidget )
+    right_layout:add( separator )
+    right_layout:add( mymemicon )
+    right_layout:add( memwidget )
+    right_layout:add( separator )
+    right_layout:add( mynetdownicon )
+    right_layout:add( mynetwidget )
+    right_layout:add( mynetupicon )
+    right_layout:add( separator )
+    right_layout:add( mytextclock )
+    right_layout:add( mylayoutbox[s] )
+
+    local layout = wibox.layout.align.horizontal();
+    layout:set_left( left_layout );
+    layout:set_right( right_layout );
+
+    mywibox[s]:set_widget( layout );
 end
 -- }}}
 
@@ -287,7 +279,17 @@ globalkeys = awful.util.table.join(
                   mypromptbox[mouse.screen].widget,
                   awful.util.eval, nil,
                   awful.util.getdir("cache") .. "/history_eval")
-              end)
+              end),
+
+    -- all minimized clients are restored 
+    awful.key({ modkey, "Shift"   }, "n", 
+        function()
+            local tag = awful.tag.selected()
+                for i=1, #tag:clients() do
+                    tag:clients()[i].minimized=false
+                    tag:clients()[i]:redraw()
+            end
+        end)
 )
 
 clientkeys = awful.util.table.join(
@@ -365,18 +367,21 @@ awful.rules.rules = {
     { rule = { },
       properties = { border_width = beautiful.border_width,
                      border_color = beautiful.border_normal,
-                     focus = true,
-                     keys = clientkeys,
-                     buttons = clientbuttons } },
-    { rule = { class = "MPlayer" },
+                     focus        = true,
+                     keys         = clientkeys,
+                     buttons      = clientbuttons } },
+    { rule       = { class = "MPlayer" },
       properties = { floating = true } },
-    { rule = { class = "pinentry" },
+    { rule       = { class = "pinentry" },
       properties = { floating = true } },
-    { rule = { class = "gimp" },
+    { rule       = { class = "gimp" },
       properties = { floating = true } },
-    { rule = { class = "Skype" },
-      properties = { tag = tags[1][8] },
-      callback = awful.client.setslave },
+    { rule       = { class = "Skype" },
+      properties = { tag = tags[1][8],
+                     size_hints_honor = false },
+      callback   = awful.client.setslave },
+    { rule       = { class = "XTerm" },
+      callback   = awful.client.setslave },
     -- Set Firefox to always map on tags number 2 of screen 1.
     -- { rule = { class = "Firefox" },
     --   properties = { tag = tags[1][2] } },
@@ -385,12 +390,24 @@ awful.rules.rules = {
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
-client.add_signal("manage", function (c, startup)
+client.connect_signal("manage", function (c, startup)
     -- Add a titlebar
-    awful.titlebar.add(c, { modkey = modkey, height = "14" })
+    if c.type == "normal" or c.type == "dialog" then
+      local right_layout = wibox.layout.fixed.horizontal()
+      right_layout:add( awful.titlebar.widget.closebutton(c) )
+
+      local title = awful.titlebar.widget.titlewidget(c)
+
+      local layout = wibox.layout.align.horizontal()
+      layout:set_right( right_layout )
+      layout:set_middle( title )
+
+      awful.titlebar(c):set_widget(layout)
+      awful.titlebar(c, {size = 12 } )
+    end
 
     -- Enable sloppy focus
-    c:add_signal("mouse::enter", function(c)
+    c:connect_signal("mouse::enter", function(c)
         if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
             and awful.client.focus.filter(c) then
             client.focus = c
@@ -410,6 +427,7 @@ client.add_signal("manage", function (c, startup)
     end
 end)
 
-client.add_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.add_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
+client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+awful.util.spawn( "xmodmap /home/sr/.xmodmap" )
 -- }}}
