@@ -49,7 +49,7 @@ if awful.util.file_readable(config .. "/vain/init.lua") then
 end
 --}}}
 
-theme.font          = "sans 8"
+theme.font          = "Terminus 6"
 
 theme.bg_normal     = "#222222"
 theme.bg_focus      = "#d8d8d8"
@@ -87,8 +87,8 @@ theme.tasklist_floating_icon = themedir .. "/tasklist/floatingw_grey.png"
 -- menu_[bg|fg]_[normal|focus]
 -- menu_[border_color|border_width]
 theme.menu_submenu_icon = themedir .. "/submenu.png"
-theme.menu_height = "15"
-theme.menu_width  = "110"
+theme.menu_height = "24"
+theme.menu_width  = "180"
 theme.menu_border_width = "0"
 
 -- You can add as many variables as
